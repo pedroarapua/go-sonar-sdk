@@ -23,7 +23,7 @@ import (
 
 const (
 	defaultBaseURL = "https://sonarcloud.io/api/"
-	userAgent      = "techlead-metrics"
+	userAgent      = "sonar"
 )
 
 // A Client manages communication with the Sonar API.
@@ -101,43 +101,23 @@ func addOptions(s string, opt interface{}) (string, error) {
 // provided, a new http.Client will be used. To use API methods which require
 // authentication, provide an http.Client that will perform the authentication
 // for you (such as that provided by the golang.org/x/oauth2 library).
-func NewClient(httpClient *http.Client) *Client {
+func NewClient(httpClient *http.Client, baseURL string) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	baseURL, _ := url.Parse(defaultBaseURL)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
+	var baseURLClient *url.URL
+
+	if baseURL != "" {
+		baseURLClient, _ = url.Parse(baseURL)
+	} else {
+		baseURLClient, _ = url.Parse(defaultBaseURL)
+	}
+
+	c := &Client{client: httpClient, BaseURL: baseURLClient, UserAgent: userAgent}
 	c.common.client = c
 	c.Projects = (*ProjectsService)(&c.common)
 	return c
-}
-
-// NewEnterpriseClient returns a new Sonar API client with provided
-// base URL (often the same URL and is your Sonar Enterprise hostname).
-// If a nil httpClient is provided, http.DefaultClient will be used.
-//
-// Note that NewEnterpriseClient is a convenience helper only;
-// its behavior is equivalent to using NewClient, followed by setting
-// the BaseURL fields.
-//
-// Another important thing is that by default, the Sonar Enterprise URL format
-// should be http(s)://[hostname]/api or you will always receive the 406 status code.
-func NewEnterpriseClient(baseURL, uploadURL string, httpClient *http.Client) (*Client, error) {
-	baseEndpoint, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, err
-	}
-	if !strings.HasSuffix(baseEndpoint.Path, "/") {
-		baseEndpoint.Path += "/"
-	}
-	if !strings.HasSuffix(baseEndpoint.Path, "/api/") {
-		baseEndpoint.Path += "api/"
-	}
-
-	c := NewClient(httpClient)
-	c.BaseURL = baseEndpoint
-	return c, nil
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr,
@@ -190,33 +170,12 @@ type Response struct {
 	// responses that are not part of a paginated set, or for which there
 	// are no additional pages.
 
-	Paging Paging
-}
-
-// Sonar Response object.
-type SonarResponse struct {
-	Paging Paging `json:"paging,omitempty"`
-}
-
-// Pagination object.
-type Paging struct {
-	index int
-	size  int
-	total int
 }
 
 // newResponse creates a new Response for the provided http.Response.
 // r must not be nil.
 func newResponse(r *http.Response) *Response {
-	sonarResponse := &SonarResponse{}
-	data, err := ioutil.ReadAll(r.Body)
-
-	if err == nil && data != nil {
-		json.Unmarshal(data, sonarResponse)
-	}
-
 	response := &Response{Response: r}
-	response.Paging = sonarResponse.Paging
 
 	return response
 }
@@ -264,7 +223,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, resp.Body)
 		} else {
-			decErr := json.NewDecoder(resp.Body).Decode(v)
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
+			decErr := json.Unmarshal(bodyBytes, &v)
 			if decErr == io.EOF {
 				decErr = nil // ignore EOF errors caused by empty response body
 			}
