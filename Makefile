@@ -10,8 +10,14 @@ setup:
 install:
 	@dep ensure
 
+test:
+	go test `go list ./... | grep -v examples` -race -coverprofile=coverage.out -covermode=atomic && go tool cover -html=coverage.out
+
 nv: 
 	@echo $(GOPACKAGES)
 
 clean:
 	rm -drf dist/
+
+run:
+	go run examples/simple/main.go

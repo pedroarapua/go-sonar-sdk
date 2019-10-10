@@ -23,13 +23,11 @@ func main() {
 	fmt.Print("Sonar Token: ")
 	token, _ := r.ReadString('\n')
 
-	fmt.Print("Sonar URL: ")
-	url, _ := r.ReadString('\n')
-
 	tp := sonar.BasicAuthTransport{
 		Username: strings.TrimSpace(token),
 	}
 
+	url := string("http://localhost:9000/api/")
 	client := sonar.NewClient(tp.Client(), url)
 	options := sonar.NewProjectsListOptions(0, 0, nil)
 	ctx := context.Background()

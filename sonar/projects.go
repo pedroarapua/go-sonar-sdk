@@ -18,15 +18,15 @@ type ProjectsService service
 
 // ResponseProjects object.
 type ResponseProjects struct {
-	Paging     ResponsePaging `json:"paging,omitempty"`
-	Components []Project      `json:"components"`
+	Paging     *ResponsePaging `json:"paging,omitempty"`
+	Components *[]Project      `json:"components"`
 }
 
 // ResponsePaging object.
 type ResponsePaging struct {
-	Index int `json:"pageIndex"`
-	Size  int `json:"pageSize"`
-	Total int `json:"total"`
+	Index *int `json:"pageIndex"`
+	Size  *int `json:"pageSize"`
+	Total *int `json:"total"`
 }
 
 // Project represents a Sonar project.
@@ -41,8 +41,8 @@ type Project struct {
 	Revision         *string `json:"revision,omitempty"`
 }
 
-func (r ResponseProjects) String() string {
-	return Stringify(r)
+func (p Project) String() string {
+	return Stringify(p)
 }
 
 // ProjectsListOptions specifies the optional parameters to the

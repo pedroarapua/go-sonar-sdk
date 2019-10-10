@@ -1,3 +1,4 @@
 .env
 key.json
 vendor/
+coverage.out

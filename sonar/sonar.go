@@ -22,8 +22,10 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://sonarcloud.io/api/"
+	hostURL        = "https://sonarcloud.io"
 	userAgent      = "sonar"
+	basePath       = "api"
+	defaultBaseURL = hostURL + "/" + basePath + "/"
 )
 
 // A Client manages communication with the Sonar API.
@@ -101,20 +103,19 @@ func addOptions(s string, opt interface{}) (string, error) {
 // provided, a new http.Client will be used. To use API methods which require
 // authentication, provide an http.Client that will perform the authentication
 // for you (such as that provided by the golang.org/x/oauth2 library).
-func NewClient(httpClient *http.Client, baseURL string) *Client {
+func NewClient(httpClient *http.Client, sonarURL string) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 
-	var baseURLClient *url.URL
-
-	if baseURL != "" {
-		baseURLClient, _ = url.Parse(baseURL)
+	var baseURL *url.URL
+	if sonarURL != "" {
+		baseURL, _ = url.Parse(sonarURL)
 	} else {
-		baseURLClient, _ = url.Parse(defaultBaseURL)
+		baseURL, _ = url.Parse(defaultBaseURL)
 	}
 
-	c := &Client{client: httpClient, BaseURL: baseURLClient, UserAgent: userAgent}
+	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
 	c.common.client = c
 	c.Projects = (*ProjectsService)(&c.common)
 	return c
@@ -214,9 +215,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 	}
 	defer resp.Body.Close()
 
+	response := newResponse(resp)
+
 	err = CheckResponse(resp)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
 	if v != nil {
@@ -224,17 +227,18 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 			io.Copy(w, resp.Body)
 		} else {
 			bodyBytes, _ := ioutil.ReadAll(resp.Body)
-			decErr := json.Unmarshal(bodyBytes, &v)
-			if decErr == io.EOF {
-				decErr = nil // ignore EOF errors caused by empty response body
-			}
-			if decErr != nil {
-				err = decErr
+			var str = string(bodyBytes)
+			if str != "" {
+				decErr := json.Unmarshal(bodyBytes, &v)
+				if decErr == io.EOF {
+					decErr = nil // ignore EOF errors caused by empty response body
+				}
+				if decErr != nil {
+					err = decErr
+				}
 			}
 		}
 	}
-
-	response := newResponse(resp)
 
 	return response, err
 }
@@ -363,3 +367,22 @@ func Int64(v int64) *int64 { return &v }
 // String is a helper routine that allocates a new string value
 // to store v and returns a pointer to it.
 func String(v string) *string { return &v }
+
+// parseBoolResponse determines the boolean result from a GitHub API response.
+// Several GitHub API methods return boolean responses indicated by the HTTP
+// status code in the response (true indicated by a 204, false indicated by a
+// 404). This helper function will determine that result and hide the 404
+// error if present. Any other error will be returned through as-is.
+func parseBoolResponse(err error) (bool, error) {
+	if err == nil {
+		return true, nil
+	}
+
+	if err, ok := err.(*ErrorResponse); ok && err.Response.StatusCode == http.StatusNotFound {
+		// Simply false. In this one case, we do not pass the error through.
+		return false, nil
+	}
+
+	// some other real error occurred
+	return false, err
+}
