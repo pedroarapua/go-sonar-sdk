@@ -16,7 +16,6 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
-	"sync"
 
 	"github.com/google/go-querystring/query"
 )
@@ -30,8 +29,7 @@ const (
 
 // A Client manages communication with the Sonar API.
 type Client struct {
-	clientMu sync.Mutex   // clientMu protects the client during calls that modify the CheckRedirect func.
-	client   *http.Client // HTTP client used to communicate with the API.
+	client *http.Client // HTTP client used to communicate with the API.
 
 	// Base URL for API requests. Defaults to the public Sonar API, but can be
 	// set to a domain endpoint to use with Sonar Enterprise. BaseURL should
@@ -224,7 +222,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, err = io.Copy(w, resp.Body)
 		} else {
 			bodyBytes, _ := ioutil.ReadAll(resp.Body)
 			var str = string(bodyBytes)
@@ -301,7 +299,10 @@ func CheckResponse(r *http.Response) error {
 	errorResponse := &ErrorResponse{Response: r}
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && data != nil {
-		json.Unmarshal(data, errorResponse)
+		err = json.Unmarshal(data, errorResponse)
+	}
+	if err != nil {
+		return err
 	}
 	return errorResponse
 }
