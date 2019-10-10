@@ -41,7 +41,11 @@ type Project struct {
 	Revision         *string `json:"revision,omitempty"`
 }
 
-func (p Project) String() string {
+func (r *ResponseProjects) String() string {
+	return Stringify(r)
+}
+
+func (p *Project) String() string {
 	return Stringify(p)
 }
 
