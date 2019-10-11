@@ -99,7 +99,7 @@ func TestProjectsService_ListEmpty(t *testing.T) {
 	}
 }
 
-func TestProjectsService_StringResponseProjects(t *testing.T) {
+func TestProjectsService_StringProject(t *testing.T) {
 	want := `sonar.Project{Organization:"teste", ID:"1", Key:"Key", Name:"Name", Qualifier:"Qualifier", Visibility:"Visibility", LastAnalysisDate:"LastAnalysisDate", Revision:"Revision"}`
 
 	project := Project{
@@ -115,5 +115,18 @@ func TestProjectsService_StringResponseProjects(t *testing.T) {
 
 	if got := project.String(); got != want {
 		t.Errorf("Projects.String returned %+v, want %+v", got, want)
+	}
+}
+
+func TestProjectsService_StringResponseProjects(t *testing.T) {
+	want := `sonar.ResponseProjects{Paging:sonar.ResponsePaging{}, Components:[]}`
+
+	response := &ResponseProjects{
+		Paging:     &ResponsePaging{},
+		Components: &[]Project{},
+	}
+
+	if got := response.String(); got != want {
+		t.Errorf("ResponseProjects.String returned %+v, want %+v", got, want)
 	}
 }

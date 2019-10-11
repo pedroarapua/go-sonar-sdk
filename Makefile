@@ -21,7 +21,7 @@ run:
 lint:
 	golangci-lint run
 
-test: lint
+test:
 	go test `go list ./... | grep -v examples`
 
 test-coverage:
