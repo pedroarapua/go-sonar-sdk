@@ -99,6 +99,16 @@ func TestProjectsService_ListEmpty(t *testing.T) {
 	}
 }
 
+func TestProjectsService_ListErrorAddOptions(t *testing.T) {
+	client, _, _, teardown := setup()
+	defer teardown()
+
+	_, _, err := client.Projects.List(context.Background(), nil)
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 func TestProjectsService_StringProject(t *testing.T) {
 	want := `sonar.Project{Organization:"teste", ID:"1", Key:"Key", Name:"Name", Qualifier:"Qualifier", Visibility:"Visibility", LastAnalysisDate:"LastAnalysisDate", Revision:"Revision"}`
 
@@ -128,5 +138,37 @@ func TestProjectsService_StringResponseProjects(t *testing.T) {
 
 	if got := response.String(); got != want {
 		t.Errorf("ResponseProjects.String returned %+v, want %+v", got, want)
+	}
+}
+
+func TestProjectsService_NewProjectsListOptionsDefault(t *testing.T) {
+	want := ProjectsListOptions{
+		ListOptions: ListOptions{
+			PageIndex: 1,
+			PageSize:  10,
+		},
+		Projects: "",
+	}
+
+	response := NewProjectsListOptions(0, 0, nil)
+
+	if !reflect.DeepEqual(response, want) {
+		t.Errorf("NewProjectsListOptions returned %+v, want %+v", response, want)
+	}
+}
+
+func TestProjectsService_NewProjectsListOptions(t *testing.T) {
+	want := ProjectsListOptions{
+		ListOptions: ListOptions{
+			PageIndex: 1,
+			PageSize:  15,
+		},
+		Projects: "teste,teste1",
+	}
+
+	response := NewProjectsListOptions(1, 15, []string{"teste", "teste1"})
+
+	if !reflect.DeepEqual(response, want) {
+		t.Errorf("NewProjectsListOptions returned %+v, want %+v", response, want)
 	}
 }
