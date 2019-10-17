@@ -21,8 +21,8 @@ func TestProjectsService_List(t *testing.T) {
 		fmt.Fprint(w, `{
 			"paging": {
 				"pageIndex": 1,
-				"pageSize": 5,
-				"total": 2
+				"pageSize": 10,
+				"total": 1
 			},
 			"components": [{
 				"organization": "default-organization",
@@ -46,7 +46,7 @@ func TestProjectsService_List(t *testing.T) {
 		Paging: &ResponsePaging{
 			Index: 1,
 			Size:  10,
-			Total: 2,
+			Total: 1,
 		},
 		Components: &[]Project{{
 			Organization:     "default-organization",

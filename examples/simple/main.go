@@ -10,7 +10,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -28,11 +27,14 @@ func main() {
 	}
 
 	url := string("http://localhost:9000/api/")
-	client := sonar.NewClient(tp.Client(), url)
-	options := sonar.NewProjectsListOptions(0, 0, nil)
-	ctx := context.Background()
+	client := sonar.NewClient(url, tp.Client())
+	options := sonar.ProjectsOptParams{
+		Page:     1,
+		Size:     10,
+		Projects: []string{},
+	}
 
-	resp, _, err := client.Projects.List(ctx, &options)
+	_, _, err := client.Projects.List(&options)
 
 	if err != nil {
 		fmt.Printf("\nerror: %v\n", err)

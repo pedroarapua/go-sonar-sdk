@@ -218,6 +218,12 @@ type BasicAuthTransport struct {
 	Transport http.RoundTripper
 }
 
+// Client returns an *http.Client that makes requests that are authenticated
+// using HTTP Basic Authentication.
+func (t *BasicAuthTransport) Client() *http.Client {
+	return &http.Client{Transport: t}
+}
+
 func (t *BasicAuthTransport) transport() http.RoundTripper {
 	if t.Transport != nil {
 		return t.Transport

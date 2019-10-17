@@ -77,5 +77,10 @@ func (p *ProjectsService) List(opt *ProjectsOptParams) (*ResponseProjects, *stri
 
 	response := &ResponseProjects{}
 	resp, err := p.client.Do(req, &response)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
 	return response, resp.BodyStrPtr, err
 }
