@@ -36,8 +36,5 @@ func main() {
 
 	if err != nil {
 		fmt.Printf("\nerror: %v\n", err)
-		return
 	}
-
-	fmt.Printf("\n%v\n", sonar.Stringify(resp))
 }

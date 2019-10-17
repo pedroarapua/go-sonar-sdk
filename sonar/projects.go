@@ -6,7 +6,8 @@
 package sonar
 
 import (
-	"context"
+	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -14,7 +15,9 @@ import (
 // in the Sonar API.
 //
 // Sonar API docs: https://sonarcloud.io/web_api/api/projects
-type ProjectsService service
+type ProjectsService struct {
+	client *Client
+}
 
 // ResponseProjects object.
 type ResponseProjects struct {
@@ -24,77 +27,55 @@ type ResponseProjects struct {
 
 // ResponsePaging object.
 type ResponsePaging struct {
-	Index *int `json:"pageIndex"`
-	Size  *int `json:"pageSize"`
-	Total *int `json:"total"`
+	Index int `json:"pageIndex"`
+	Size  int `json:"pageSize"`
+	Total int `json:"total"`
 }
 
 // Project represents a Sonar project.
 type Project struct {
-	Organization     *string `json:"organization,omitempty"`
-	ID               *string `json:"id,omitempty"`
-	Key              *string `json:"key,omitempty"`
-	Name             *string `json:"name,omitempty"`
-	Qualifier        *string `json:"qualifier,omitempty"`
-	Visibility       *string `json:"visibility,omitempty"`
-	LastAnalysisDate *string `json:"lastAnalysisDate,omitempty"`
-	Revision         *string `json:"revision,omitempty"`
+	Organization     string `json:"organization,omitempty"`
+	ID               string `json:"id,omitempty"`
+	Key              string `json:"key,omitempty"`
+	Name             string `json:"name,omitempty"`
+	Qualifier        string `json:"qualifier,omitempty"`
+	Visibility       string `json:"visibility,omitempty"`
+	LastAnalysisDate string `json:"lastAnalysisDate,omitempty"`
+	Revision         string `json:"revision,omitempty"`
 }
 
-func (r *ResponseProjects) String() string {
-	return Stringify(r)
-}
-
-func (p *Project) String() string {
-	return Stringify(p)
-}
-
-// ProjectsListOptions specifies the optional parameters to the
-// ProjectsService.ListAll method.
-type ProjectsListOptions struct {
-	ListOptions
-	Projects string `url:"projects,omitempty"`
-}
-
-// NewProjectsListOptions create new instance of ProjectsListOptions
-func NewProjectsListOptions(index int, size int, projects []string) ProjectsListOptions {
-	if index == 0 {
-		index = 1
-	}
-	if size == 0 {
-		size = 10
-	}
-	if projects == nil {
-		projects = []string{}
-	}
-
-	return ProjectsListOptions{
-		ListOptions: ListOptions{
-			PageIndex: index,
-			PageSize:  size,
-		},
-		Projects: strings.Join(projects[:], ","),
-	}
+// ProjectsOptParams specifies the optional parameters to the
+type ProjectsOptParams struct {
+	Page     int
+	Size     int
+	Projects []string
 }
 
 // List lists all projects, in the order that they were created on sonar.
 //
 // Sonar API docs: https://sonarcloud.io/web_api/api/projects
-func (p *ProjectsService) List(ctx context.Context, opt *ProjectsListOptions) (*ResponseProjects, *Response, error) {
-	u, err := addOptions("projects/search", opt)
-	if err != nil {
-		return nil, nil, err
+func (p *ProjectsService) List(opt *ProjectsOptParams) (*ResponseProjects, *string, error) {
+
+	params := url.Values{}
+
+	if opt != nil {
+		if opt.Page != 0 {
+			params.Add("p", strconv.Itoa(opt.Page))
+		}
+		if opt.Size != 0 {
+			params.Add("ps", strconv.Itoa(opt.Size))
+		}
+		if opt.Projects != nil && len(opt.Projects) > 0 {
+			params.Add("projects", strings.Join(opt.Projects[:], ","))
+		}
 	}
 
-	req, err := p.client.NewRequest("GET", u, nil)
+	req, err := p.client.NewRequest("GET", "projects/search", params.Encode())
 	if err != nil {
 		return nil, nil, err
 	}
 
 	response := &ResponseProjects{}
-	httpResponse, err := p.client.Do(ctx, req, &response)
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return response, httpResponse, nil
+	resp, err := p.client.Do(req, &response)
+	return response, resp.BodyStrPtr, err
 }

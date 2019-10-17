@@ -7,4 +7,5 @@ require (
 	github.com/axw/gocov v1.0.0 // indirect
 	github.com/golangci/golangci-lint v1.18.0 // indirect
 	github.com/google/go-querystring v1.0.0
+	github.com/mogita/oauth v0.0.0-20190804151539-f4354877fe9e
 )

@@ -110,6 +110,8 @@ github.com/mitchellh/go-homedir v1.0.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrk
 github.com/mitchellh/go-ps v0.0.0-20170309133038-4fdf99ab2936/go.mod h1:r1VsdOzOPt1ZSrGZWFoNhsAedKnEd6r9Np1+5blZCWk=
 github.com/mitchellh/mapstructure v0.0.0-20180220230111-00c29f56e238 h1:+MZW2uvHgN8kYvksEN3f7eFL2wpzk0GxmlFsMybWc7E=
 github.com/mitchellh/mapstructure v0.0.0-20180220230111-00c29f56e238/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
+github.com/mogita/oauth v0.0.0-20190804151539-f4354877fe9e h1:wQ1X/DuDRHlD6Z8zjDOYsElLgk0c9kU/9pOWXHwqorE=
+github.com/mogita/oauth v0.0.0-20190804151539-f4354877fe9e/go.mod h1:5QZqmh8cNZnlQuLXWahJjkyDGLjrEMejkZxGiCh1f3g=
 github.com/mozilla/tls-observatory v0.0.0-20180409132520-8791a200eb40/go.mod h1:SrKMQvPiws7F7iqYp8/TX+IhxCYhzr6N/1yb8cwHsGk=
 github.com/nbutton23/zxcvbn-go v0.0.0-20160627004424-a22cb81b2ecd/go.mod h1:o96djdrsSGy3AWPyBgZMAGfxZNfgntdJG+11KU4QvbU=
 github.com/nbutton23/zxcvbn-go v0.0.0-20171102151520-eafdab6b0663 h1:Ri1EhipkbhWsffPJ3IPlrb4SkTOPa2PfRXp3jchBczw=
